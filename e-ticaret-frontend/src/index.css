@@ -1,0 +1,116 @@
+/* Sayfa Genel Ayarları */
+
+body {
+    background-color: #f0f2f5;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+
+/* --- KART TASARIMI --- */
+
+.pro-card {
+    background: white;
+    border-radius: 16px !important;
+    /* Köşeler yuvarlak */
+    border: 1px solid rgba(0, 0, 0, 0.04) !important;
+    /* Çok silik bir çerçeve */
+    overflow: hidden;
+    /* Kartın dışına taşan her şeyi gizle (ÖNEMLİ) */
+    transition: all 0.3s ease-in-out !important;
+    /* Tüm hareketler yumuşak olsun */
+    cursor: pointer;
+    position: relative;
+}
+
+
+/* HOVER DURUMU (Kartın Üzerine Gelince) */
+
+.pro-card:hover {
+    transform: translateY(-8px) !important;
+    /* Sadece yukarı kalksın */
+    box-shadow: 0 15px 30px rgba(0, 0, 0, 0.1) !important;
+    /* Gölge derinleşsin */
+    border-color: #0d6efd !important;
+    /* Kenarlık maviye dönsün */
+}
+
+
+/* --- RESİM KUTUSU (KAFES) --- */
+
+.img-box {
+    height: 240px;
+    /* Resim alanı yüksekliği sabit */
+    width: 100%;
+    padding: 20px;
+    background: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    overflow: hidden;
+    /* Resim büyürse bu kutunun dışına çıkamasın (TAŞMAYI ENGELLER) */
+    border-bottom: 1px solid #f8f9fa;
+}
+
+
+/* --- RESMİN KENDİSİ --- */
+
+.img-box img {
+    max-height: 100%;
+    max-width: 100%;
+    object-fit: contain;
+    /* Resmi kesmeden sığdır */
+    transition: transform 0.4s ease-in-out !important;
+    /* Büyüme hızı ve yumuşaklığı */
+}
+
+
+/* HOVER: Sadece Düz Büyüme (Zoom) */
+
+.pro-card:hover .img-box img {
+    transform: scale(1.08);
+    /* %8 oranında, hafifçe ve DÜZ büyü */
+    /* rotate(-3deg); <-- BU SATIRI SİLDİK, ARTIK DÖNMEYECEK */
+}
+
+
+/* --- ETİKETLER --- */
+
+.category-badge {
+    position: absolute;
+    top: 15px;
+    left: 15px;
+    background: rgba(13, 110, 253, 0.08);
+    /* Çok açık mavi zemin */
+    color: #0d6efd;
+    padding: 5px 12px;
+    border-radius: 8px;
+    /* Hafif yuvarlak köşe */
+    font-weight: 600;
+    font-size: 0.75rem;
+    letter-spacing: 0.5px;
+    z-index: 10;
+}
+
+
+/* --- BUTON --- */
+
+.btn-circle {
+    width: 42px;
+    height: 42px;
+    border-radius: 50%;
+    background: #f1f3f5;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+    color: #495057;
+    border: none;
+}
+
+.pro-card:hover .btn-circle {
+    background: #0d6efd;
+    color: white;
+    transform: scale(1.1);
+    /* Buton hafif büyüsün */
+}
