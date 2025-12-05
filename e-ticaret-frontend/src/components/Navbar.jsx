@@ -18,31 +18,32 @@ function Navbar() {
 
   // Arama Fonksiyonu
   const handleSearch = (e) => {
-    e.preventDefault(); // Sayfa yenilenmesini engelle
+    e.preventDefault();
     if (searchTerm.trim()) {
-        // Ana sayfaya 'search' parametresi ile git
         navigate(`/?search=${searchTerm}`);
-        setSearchTerm(""); // Inputu temizle (İsteğe bağlı)
+        setSearchTerm("");
     } else {
-        navigate("/"); // Boşsa ana sayfaya dön
+        navigate("/");
     }
   };
 
   return (
     <nav className="navbar navbar-expand-lg navbar-dark bg-dark sticky-top shadow-sm py-3">
       <div className="container">
+        {/* LOGO */}
         <Link className="navbar-brand fw-bold fs-4 d-flex align-items-center gap-2" to="/">
           <i className="bi bi-bag-heart-fill text-warning"></i> E-Ticaret
         </Link>
 
+        {/* MOBİL MENU BUTONU */}
         <button className="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
           <span className="navbar-toggler-icon"></span>
         </button>
 
         <div className="collapse navbar-collapse" id="navbarNav">
           
-          {/* ARAMA ÇUBUĞU (Aynı) */}
-          <form className="d-flex mx-auto my-2 my-lg-0" style={{ maxWidth: "400px", width: "100%" }} onSubmit={handleSearch}>
+          {/* ARAMA ÇUBUĞU */}
+          <form className="d-flex mx-auto my-3 my-lg-0" style={{ maxWidth: "400px", width: "100%" }} onSubmit={handleSearch}>
              <div className="input-group">
                 <input 
                     className="form-control border-0" 
@@ -57,11 +58,14 @@ function Navbar() {
              </div>
           </form>
 
-          <ul className="navbar-nav ms-auto align-items-center">
+          {/* SAĞ TARAFAKİ LİNKLER */}
+          <ul className="navbar-nav ms-auto align-items-center gap-2">
+            
             <li className="nav-item">
               <Link className="nav-link active" to="/">Ana Sayfa</Link>
             </li>
 
+            {/* SEPET */}
             <li className="nav-item me-2">
               <Link className="nav-link position-relative" to="/sepet">
                 <i className="bi bi-cart3 fs-5"></i>
@@ -73,34 +77,36 @@ function Navbar() {
               </Link>
             </li>
 
+            {/* GİRİŞ / ÇIKIŞ DURUMU */}
             {!isAuthenticated ? (
               <>
                 <li className="nav-item">
-                  <Link className="btn btn-outline-light btn-sm ms-2" to="/giris">Giriş Yap</Link>
+                  <Link className="btn btn-outline-light btn-sm" to="/giris">Giriş Yap</Link>
                 </li>
                 <li className="nav-item">
-                  <Link className="btn btn-warning btn-sm ms-2" to="/kayit">Kayıt Ol</Link>
+                  <Link className="btn btn-warning btn-sm" to="/kayit">Kayıt Ol</Link>
                 </li>
               </>
             ) : (
-              <li className="nav-item dropdown">
-                 <div className="d-flex gap-2 ms-2 align-items-center">
-                    
-                    {/* 👇 SADECE SATICILAR GÖREBİLİR 👇 */}
-                    {role === "ROLE_SELLER" && (
-                        <Link to="/satici-paneli" className="btn btn-success btn-sm fw-bold">
-                            <i className="bi bi-shop-window me-1"></i> Mağazam
-                        </Link>
-                    )}
-                    {/* ------------------------------- */}
+              <li className="nav-item d-flex align-items-center gap-2">
+                  
+                  {/* SATICI BUTONU (Sadece Satıcılar Görür) */}
+                  {role === "ROLE_SELLER" && (
+                      <Link to="/satici-paneli" className="btn btn-success btn-sm fw-bold">
+                          <i className="bi bi-shop-window me-1"></i> Mağazam
+                      </Link>
+                  )}
 
-                    <Link to="/profil" className="btn btn-outline-primary btn-sm">
-                        <i className="bi bi-person"></i> Profilim
-                    </Link>
-                    <button onClick={handleLogout} className="btn btn-outline-danger btn-sm">
-                        <i className="bi bi-box-arrow-right"></i>
-                    </button>
-                 </div>
+                  {/* PROFİL BUTONU (Müşteri ve Satıcı Görür) */}
+                  {/* 'btn-outline-primary' yerine 'btn-outline-light' yaptım, koyu zeminde daha net görünür */}
+                  <Link to="/profil" className="btn btn-outline-light btn-sm">
+                      <i className="bi bi-person-circle me-1"></i> Hesabım
+                  </Link>
+                  
+                  {/* ÇIKIŞ BUTONU */}
+                  <button onClick={handleLogout} className="btn btn-outline-danger btn-sm" title="Çıkış Yap">
+                      <i className="bi bi-box-arrow-right"></i>
+                  </button>
               </li>
             )}
           </ul>

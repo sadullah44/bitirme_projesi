@@ -10,10 +10,11 @@ export const createOrder = (teslimatAdresBasligi) => {
 };
 
 // Sipariş Geçmişini Getir
+// GÜNCELLENDİ: Artık /siparis/musteri-siparisleri adresine gidiyor
 export const getMyOrders = () => {
-    // Backend: GET /siparis/listem
-    return api.get("/siparis/listem");
+    return api.get("/siparis/musteri-siparisleri");
 };
+
 // SATICIYA GELEN SİPARİŞLER
 export const getSellerOrders = () => {
     return api.get("/siparis/satici-siparisleri");

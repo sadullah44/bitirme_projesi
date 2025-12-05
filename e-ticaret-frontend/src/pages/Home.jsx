@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useSearchParams } from "react-router-dom"; 
 import { getAllProducts, getProductsByCategory, searchProducts, filterProducts, getBrands, getCategories } from "../services/productService";
 import ProductCard from "../components/ProductCard";
+import BestSellers from "../components/BestSellers"; // <-- Zaten import etmiştin
 
 function Home() {
   const [products, setProducts] = useState([]);
@@ -109,7 +110,6 @@ function Home() {
       <div className="bg-white border-bottom shadow-sm sticky-top" style={{ top: "70px", zIndex: 900 }}>
         <div className="container py-3 d-flex align-items-center justify-content-end">
             
-            {/* O yatay buton listesi silindi. Sadece bu şık buton kaldı. */}
             <button 
                 className="btn btn-outline-primary rounded-pill px-4 d-flex align-items-center gap-2"
                 data-bs-toggle="offcanvas" 
@@ -177,14 +177,20 @@ function Home() {
         </div>
       </div>
 
-      {/* HERO SECTION */}
+      {/* HERO SECTION & BEST SELLERS */}
+      {/* Sadece ana sayfadayken (filtre/arama yokken) göster */}
       {selectedCategory === "Tümü" && !searchTerm && !isFilterActive && (
-        <div className="bg-light py-5 text-center shadow-sm" style={{ background: "linear-gradient(to right, #eef2f3, #8e9eab)" }}>
-            <div className="container py-4">
-            <h1 className="display-5 fw-bold text-dark">E-Ticaret Dünyası</h1>
-            <p className="lead text-secondary">Binlerce ürün arasından dilediğini seç.</p>
+        <>
+            <div className="bg-light py-5 text-center shadow-sm" style={{ background: "linear-gradient(to right, #eef2f3, #8e9eab)" }}>
+                <div className="container py-4">
+                <h1 className="display-5 fw-bold text-dark">E-Ticaret Dünyası</h1>
+                <p className="lead text-secondary">Binlerce ürün arasından dilediğini seç.</p>
+                </div>
             </div>
-        </div>
+            
+            {/* 👇 YENİ EKLENEN KISIM BURASI 👇 */}
+            <BestSellers />
+        </>
       )}
 
       {/* ÜRÜN LİSTESİ */}
