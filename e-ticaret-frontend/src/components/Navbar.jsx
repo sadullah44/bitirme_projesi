@@ -4,7 +4,7 @@ import { AuthContext } from "../context/AuthContext";
 import { CartContext } from "../context/CartContext";
 
 function Navbar() {
-  const { isAuthenticated, logout } = useContext(AuthContext);
+  const { isAuthenticated, logout, role } = useContext(AuthContext);
   const { cartCount } = useContext(CartContext);
   const navigate = useNavigate();
 
@@ -41,7 +41,7 @@ function Navbar() {
 
         <div className="collapse navbar-collapse" id="navbarNav">
           
-          {/* ORTA KISIM: ARAMA ÇUBUĞU */}
+          {/* ARAMA ÇUBUĞU (Aynı) */}
           <form className="d-flex mx-auto my-2 my-lg-0" style={{ maxWidth: "400px", width: "100%" }} onSubmit={handleSearch}>
              <div className="input-group">
                 <input 
@@ -58,8 +58,7 @@ function Navbar() {
           </form>
 
           <ul className="navbar-nav ms-auto align-items-center">
-             {/* ... Diğer linkler (Sepet, Giriş vs.) AYNI KALSIN ... */}
-             <li className="nav-item">
+            <li className="nav-item">
               <Link className="nav-link active" to="/">Ana Sayfa</Link>
             </li>
 
@@ -85,12 +84,21 @@ function Navbar() {
               </>
             ) : (
               <li className="nav-item dropdown">
-                 <div className="d-flex gap-2 ms-2">
+                 <div className="d-flex gap-2 ms-2 align-items-center">
+                    
+                    {/* 👇 SADECE SATICILAR GÖREBİLİR 👇 */}
+                    {role === "ROLE_SELLER" && (
+                        <Link to="/satici-paneli" className="btn btn-success btn-sm fw-bold">
+                            <i className="bi bi-shop-window me-1"></i> Mağazam
+                        </Link>
+                    )}
+                    {/* ------------------------------- */}
+
                     <Link to="/profil" className="btn btn-outline-primary btn-sm">
                         <i className="bi bi-person"></i> Profilim
                     </Link>
                     <button onClick={handleLogout} className="btn btn-outline-danger btn-sm">
-                        <i className="bi bi-box-arrow-right"></i> Çıkış
+                        <i className="bi bi-box-arrow-right"></i>
                     </button>
                  </div>
               </li>

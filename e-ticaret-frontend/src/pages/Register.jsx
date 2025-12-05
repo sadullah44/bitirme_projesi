@@ -6,16 +6,19 @@ function Register() {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
 
+  // Form state'ine 'isSeller' ekledik
   const [form, setForm] = useState({
     ad: "", soyad: "", eposta: "", sifre: "", telefon: "",
-    baslik: "", adresSatiri: "", sehir: "", ilce: "", postaKodu: ""
+    baslik: "", adresSatiri: "", sehir: "", ilce: "", postaKodu: "",
+    isSeller: false // YENİ: Satıcı mı?
   });
 
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(null);
 
   const handleChange = (e) => {
-    setForm({ ...form, [e.target.name]: e.target.value });
+    const value = e.target.type === 'checkbox' ? e.target.checked : e.target.value;
+    setForm({ ...form, [e.target.name]: value });
   };
 
   const handleSubmit = (e) => {
@@ -29,7 +32,9 @@ function Register() {
       adresler: [{
         baslik: form.baslik, adresSatiri: form.adresSatiri, sehir: form.sehir, 
         ilce: form.ilce, postaKodu: form.postaKodu, varsayilanMi: true
-      }]
+      }],
+      // Eğer kutucuk işaretliyse "SATICI", değilse null gönder (Backend USER yapacak)
+      rol: form.isSeller ? "SATICI" : null 
     };
 
     register(registerData)
@@ -51,13 +56,13 @@ function Register() {
             <div className="card-body p-0">
               
               <div className="row g-0">
-                {/* SOL TARAF: Görsel veya Başlık Alanı */}
+                {/* SOL TARAF */}
                 <div className="col-md-4 bg-primary text-white p-5 d-flex flex-column justify-content-center align-items-center text-center">
                   <div className="mb-4">
-                    <i className="bi bi-bag-check-fill display-1"></i>
+                    <i className="bi bi-shop display-1"></i>
                   </div>
-                  <h2 className="fw-bold">Aramıza Katılın!</h2>
-                  <p className="lead">Binlerce ürüne ulaşmak ve sipariş vermek için hemen üye olun.</p>
+                  <h2 className="fw-bold">Mağazanızı Açın!</h2>
+                  <p className="lead">İster müşteri olun, ister satıcı. E-Ticaret dünyasına adım atın.</p>
                   <Link to="/giris" className="btn btn-outline-light rounded-pill mt-3 px-4">
                     Zaten üye misiniz?
                   </Link>
@@ -71,6 +76,23 @@ function Register() {
                   {success && <div className="alert alert-success">{success}</div>}
 
                   <form onSubmit={handleSubmit}>
+                    
+                    {/* --- SATICI OLMAK İSTİYORUM CHECKBOX --- */}
+                    <div className="form-check form-switch mb-4 p-3 bg-light rounded border">
+                        <input 
+                            className="form-check-input" 
+                            type="checkbox" 
+                            id="sellerCheck" 
+                            name="isSeller"
+                            checked={form.isSeller}
+                            onChange={handleChange}
+                            style={{cursor: "pointer"}}
+                        />
+                        <label className="form-check-label fw-bold ms-2" htmlFor="sellerCheck" style={{cursor: "pointer"}}>
+                            Satıcı Hesabı Oluştur (Ürün Satmak İstiyorum)
+                        </label>
+                    </div>
+
                     <div className="row g-3">
                       {/* --- Kişisel Bilgiler --- */}
                       <div className="col-12"><h6 className="text-muted border-bottom pb-2">Kişisel Bilgiler</h6></div>
@@ -97,11 +119,11 @@ function Register() {
                       </div>
 
                       {/* --- Adres Bilgileri --- */}
-                      <div className="col-12 mt-4"><h6 className="text-muted border-bottom pb-2">Teslimat Adresi</h6></div>
+                      <div className="col-12 mt-4"><h6 className="text-muted border-bottom pb-2">Adres Bilgileri</h6></div>
                       
                       <div className="col-md-4">
-                        <label className="form-label small">Adres Başlığı (Ev/İş)</label>
-                        <input className="form-control" name="baslik" placeholder="Örn: Ev" value={form.baslik} onChange={handleChange} required />
+                        <label className="form-label small">Adres Başlığı</label>
+                        <input className="form-control" name="baslik" placeholder="Örn: Ofis" value={form.baslik} onChange={handleChange} required />
                       </div>
                       <div className="col-md-4">
                         <label className="form-label small">Şehir</label>
@@ -123,7 +145,7 @@ function Register() {
 
                     <div className="d-grid mt-4">
                       <button type="submit" className="btn btn-primary btn-lg rounded-pill shadow-sm" disabled={loading}>
-                         {loading ? "Kaydediliyor..." : "Kaydı Tamamla"}
+                         {loading ? "Kaydediliyor..." : (form.isSeller ? "Satıcı Olarak Kaydol" : "Üye Ol")}
                       </button>
                     </div>
                   </form>

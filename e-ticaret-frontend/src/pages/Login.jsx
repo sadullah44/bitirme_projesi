@@ -24,7 +24,9 @@ function Login() {
 
     login(form)
       .then((res) => {
-        saveToken(res.data.token);
+        // saveToken (yani context'teki login) fonksiyonuna token VE rol gönderiyoruz
+        // res.data.rol, Backend'deki GirisYaniti'ndan geliyor
+        saveToken(res.data.token, res.data.rol);
         // 3. KRİTİK NOKTA BURASI:
         // Eğer bir önceki sayfadan "returnUrl" geldiyse ORAYA git,
         // Yoksa (normal girişse) Ana Sayfaya "/" git.

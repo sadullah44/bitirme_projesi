@@ -12,6 +12,7 @@ import Checkout from "./pages/Checkout"; // YENİ
 import Orders from "./pages/Orders";     // YENİ
 // Import'u ekle
 import Profile from "./pages/Profile";
+import SellerDashboard from "./pages/SellerDashboard";
 function App() {
   return (
     <AuthProvider>
@@ -44,7 +45,12 @@ function App() {
             <ProtectedRoute>
                 <Profile />
             </ProtectedRoute>
-} />
+          } />
+          <Route path="/satici-paneli" element={
+              <ProtectedRoute>
+                  <SellerDashboard />
+              </ProtectedRoute>
+          } />
         </Routes>
       </CartProvider>
     </AuthProvider>

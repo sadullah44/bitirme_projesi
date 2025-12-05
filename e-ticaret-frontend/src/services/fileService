@@ -1,0 +1,14 @@
+import axios from "axios";
+
+const API_URL = "http://localhost:8080/dosyalar";
+
+export const uploadFile = (file) => {
+    const formData = new FormData();
+    formData.append("file", file);
+
+    return axios.post(API_URL + "/yukle", formData, {
+        headers: {
+            "Content-Type": "multipart/form-data", // Bu header çok önemli!
+        },
+    });
+};

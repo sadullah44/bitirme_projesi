@@ -4,29 +4,41 @@ export const AuthContext = createContext();
 
 export function AuthProvider({ children }) {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [loading, setLoading] = useState(true);
+  const [role, setRole] = useState(null);
+  
+  // 👇 YENİ EKLENEN KRİTİK PARÇA: Yükleniyor durumu
+  const [loading, setLoading] = useState(true); 
 
-  // Sayfa ilk açıldığında token'ı oku
   useEffect(() => {
     const token = localStorage.getItem("token");
+    const storedRole = localStorage.getItem("role");
+
     if (token) {
       setIsAuthenticated(true);
+      if (storedRole) setRole(storedRole);
     }
-    setLoading(false); // işlem bitti
+    
+    // 👇 Kontrol bitti, artık yükleniyor'u kapatabiliriz
+    setLoading(false); 
   }, []);
 
-  const login = (token) => {
+  const login = (token, userRole) => {
     localStorage.setItem("token", token);
+    localStorage.setItem("role", userRole);
     setIsAuthenticated(true);
+    setRole(userRole);
   };
 
   const logout = () => {
     localStorage.removeItem("token");
+    localStorage.removeItem("role");
     setIsAuthenticated(false);
+    setRole(null);
   };
 
   return (
-    <AuthContext.Provider value={{ isAuthenticated, loading, login, logout }}>
+    // 👇 loading bilgisini de dışarı açıyoruz
+    <AuthContext.Provider value={{ isAuthenticated, role, loading, login, logout }}>
       {children}
     </AuthContext.Provider>
   );
