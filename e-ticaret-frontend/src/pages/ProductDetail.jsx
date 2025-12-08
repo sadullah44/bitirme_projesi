@@ -4,6 +4,7 @@ import { getProductById, addReview } from "../services/productService"; // addRe
 import { CartContext } from "../context/CartContext"; 
 import { AuthContext } from "../context/AuthContext";
 import { sepetEkle } from "../services/sepetService";
+import ProductRecommendations from "../components/ProductRecommendations";
 
 function ProductDetail() {
   const { id } = useParams();
@@ -104,6 +105,12 @@ function ProductDetail() {
             </div>
         </div>
       </div>
+      {/* 👇 YENİ EKLENEN KISIM: ÖNERİ MOTORU 👇 */}
+      {/* id, URL'den gelen ürün ID'sidir */}
+      <ProductRecommendations currentProductId={id} />
+      
+      <div className="mb-5"></div> {/* Biraz boşluk bırakalım */}
+      {/* 👆 YENİ KISIM BİTTİ 👆 */}
 
       {/* ALT KISIM: YORUMLAR VE DEĞERLENDİRME */}
       <div className="row">

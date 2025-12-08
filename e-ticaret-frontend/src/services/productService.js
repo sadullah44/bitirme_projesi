@@ -55,3 +55,21 @@ export const addReview = (urunId, reviewData) => {
     // reviewData: { puan: 5, metin: "Çok güzel" }
     return api.post(`/urunler/${urunId}/yorum`, reviewData);
 };
+// ÖNERİ SİSTEMİ: Birlikte Alınan Ürünleri Getir
+export const getSuggestedProducts = (productId) => {
+    return api.get(`/oneri/benzer-urunler/${productId}`);
+};
+// Satıcının Kendi Ürünleri
+export const getMyProducts = () => {
+    return api.get("/urunler/satici-urunleri");
+};
+
+// Ürün Sil
+export const deleteProduct = (id) => {
+    return api.delete(`/urunler/${id}`);
+};
+
+// Ürün Güncelle
+export const updateProduct = (id, productData) => {
+    return api.put(`/urunler/${id}`, productData);
+};
