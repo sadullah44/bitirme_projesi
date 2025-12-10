@@ -22,9 +22,9 @@ function SellerDashboard() {
   // ✅ STATİK KATEGORİ LİSTESİ (Backend’den çekilmiyor artık!)
   const staticCategories = [
     { anaKategori: "Giyim", genderRequired: true, altKategoriler: ["Tişört", "Pantolon", "Mont","Kazak","Triko"] },
-    { anaKategori: "Ayakkabı", genderRequired: true, altKategoriler: ["Spor Ayakkabı", "Bot"] },
-    { anaKategori: "Aksesuar", genderRequired: true, altKategoriler: ["Kolye", "Bileklik"] },
-    { anaKategori: "Elektronik", genderRequired: false, altKategoriler: ["Telefon", "Bilgisayar", "Tablet"] }
+    { anaKategori: "Ayakkabı", genderRequired: true, altKategoriler: ["Spor Ayakkabı", "Bot","Klasik Ayakkabı"] },
+    { anaKategori: "Aksesuar", genderRequired: true, altKategoriler: ["Kolye", "Bileklik","Kol Saati"] },
+    { anaKategori: "Elektronik", genderRequired: false, altKategoriler: ["Telefon", "Bilgisayar", "Tablet","Kulak İçi Kulaklık","Kulak Üstü Kulaklık","Hoparlör"] }
   ];
 
   const [categoryTree] = useState(staticCategories);
