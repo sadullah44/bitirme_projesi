@@ -84,12 +84,16 @@ function Cart() {
                 <div className="row g-3 align-items-center">
 
                   <div className="col-md-3">
-                    <img 
-                      src="https://placehold.co/200x150?text=Urun"
-                      className="img-fluid rounded"
-                      alt={item.isim}
-                    />
-                  </div>
+  <img 
+    // 🔥 DEĞİŞİKLİK BURADA:
+    // Eğer item.resimUrl varsa onu kullan, yoksa placeholder göster
+    src={item.resimUrl || "https://placehold.co/200x150?text=Urun"}
+    
+    className="img-fluid rounded"
+    alt={item.isim}
+    style={{ objectFit: "contain", maxHeight: "100px", width: "100%" }} // Resim düzgün dursun diye stil ekledim
+  />
+</div>
 
                   <div className="col-md-9">
                     <div className="d-flex justify-content-between">

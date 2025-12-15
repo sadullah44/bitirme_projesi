@@ -1,10 +1,13 @@
 import { useEffect, useState, useContext } from "react";
 import { useParams, useNavigate, useLocation } from "react-router-dom";
-import { getProductById, addReview } from "../services/productService"; // addReview eklendi
+import { getProductById, addReview } from "../services/productService";
 import { CartContext } from "../context/CartContext"; 
 import { AuthContext } from "../context/AuthContext";
 import { sepetEkle } from "../services/sepetService";
-import ProductRecommendations from "../components/ProductRecommendations";
+
+// 👇 HER İKİ BİLEŞENİ DE IMPORT EDİYORUZ
+import ProductRecommendations from "../components/ProductRecommendations"; // Eski (Benzer Ürünler)
+import RecommendedProducts from "../components/RecommendedProducts";     // Yeni (İlginizi Çekebilir)
 
 function ProductDetail() {
   const { id } = useParams();
@@ -24,7 +27,6 @@ function ProductDetail() {
   const { updateCartCount } = useContext(CartContext); 
   const { isAuthenticated } = useContext(AuthContext);
 
-  // Veriyi Çekme Fonksiyonu (Yorum yapınca sayfayı yenilemek için dışarı aldık)
   const fetchProduct = () => {
     getProductById(id)
       .then((res) => {
@@ -55,7 +57,6 @@ function ProductDetail() {
       .catch((err) => alert("Hata oluştu."));
   };
 
-  // YORUM GÖNDERME FONKSİYONU
   const handleReviewSubmit = (e) => {
     e.preventDefault();
     if (!isAuthenticated) {
@@ -67,8 +68,8 @@ function ProductDetail() {
     addReview(product.id, reviewForm)
         .then(() => {
             alert("Yorumunuz başarıyla eklendi!");
-            setReviewForm({ puan: 5, metin: "" }); // Formu temizle
-            fetchProduct(); // Sayfayı (ve yorumları) yenile
+            setReviewForm({ puan: 5, metin: "" });
+            fetchProduct();
         })
         .catch((err) => {
             alert("Yorum eklenirken hata oluştu.");
@@ -83,7 +84,7 @@ function ProductDetail() {
   return (
     <div className="container mt-5 mb-5">
       
-      {/* ÜST KISIM: Ürün Detay (Aynı) */}
+      {/* 1. KISIM: Ürün Detay Kartı */}
       <div className="card shadow-lg border-0 rounded-4 overflow-hidden mb-5">
         <div className="row g-0">
             <div className="col-md-6 bg-light d-flex align-items-center justify-content-center p-4">
@@ -105,18 +106,25 @@ function ProductDetail() {
             </div>
         </div>
       </div>
-      {/* 👇 YENİ EKLENEN KISIM: ÖNERİ MOTORU 👇 */}
-      {/* id, URL'den gelen ürün ID'sidir */}
-      <ProductRecommendations currentProductId={id} />
-      
-      <div className="mb-5"></div> {/* Biraz boşluk bırakalım */}
-      {/* 👆 YENİ KISIM BİTTİ 👆 */}
 
-      {/* ALT KISIM: YORUMLAR VE DEĞERLENDİRME */}
-      <div className="row">
+      {/* 2. KISIM: BENZER ÜRÜNLER (Eski Bileşen - Kategori Bazlı) */}
+      <div className="mb-4">
+        <h4 className="fw-bold mb-3">Benzer Ürünler</h4>
+        {/* Eski bileşeni burada tuttuk */}
+        <ProductRecommendations currentProductId={id} />
+      </div>
+
+      <hr className="my-5 text-muted" />
+
+      {/* 3. KISIM: İLGİNİZİ ÇEKEBİLİR (Yeni Bileşen - Akıllı Öneri) */}
+      {/* Yeni bileşeni buraya ekledik */}
+      <RecommendedProducts currentProductId={id} />
+      
+      <div className="mb-5"></div> 
+
+      {/* 4. KISIM: YORUMLAR */}
+      <div className="row mt-5">
         <div className="col-lg-8 mx-auto">
-            
-            {/* Yorum Listesi */}
             <h4 className="fw-bold mb-4"><i className="bi bi-chat-quote me-2"></i>Değerlendirmeler</h4>
             
             {product.yorumlar && product.yorumlar.length > 0 ? (
@@ -142,7 +150,6 @@ function ProductDetail() {
                 <div className="alert alert-light border text-center mb-5">Henüz yorum yapılmamış. İlk yorumu sen yap!</div>
             )}
 
-            {/* Yorum Yapma Formu */}
             <div className="card shadow-sm border-0 bg-light">
                 <div className="card-body p-4">
                     <h5 className="fw-bold mb-3">Yorum Yap</h5>
@@ -186,10 +193,8 @@ function ProductDetail() {
                     )}
                 </div>
             </div>
-
         </div>
       </div>
-
     </div>
   );
 }

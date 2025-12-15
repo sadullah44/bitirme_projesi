@@ -1,103 +1,111 @@
 import { useEffect, useState } from "react";
 import { getBestSellers, getTopRated } from "../services/raporService";
+import ProductCard from "../components/ProductCard";
 
 function BestSellers() {
-    const [bestSellers, setBestSellers] = useState([]);
-    const [topRated, setTopRated] = useState([]);
-    const [loading, setLoading] = useState(true);
+  const [bestSellers, setBestSellers] = useState([]);
+  const [topRated, setTopRated] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [activeTab, setActiveTab] = useState("satis");
 
-    useEffect(() => {
-        const fetchData = async () => {
-            try {
-                const [bestRes, ratedRes] = await Promise.all([
-                    getBestSellers(),
-                    getTopRated()
-                ]);
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const [bestRes, ratedRes] = await Promise.all([
+          getBestSellers(),
+          getTopRated()
+        ]);
+        
+        // Veri kontrolü (Debugging için konsolda görebilirsin)
+        // console.log("Gelen Çok Satanlar:", bestRes.data);
+        // console.log("Gelen Yüksek Puanlılar:", ratedRes.data);
 
-                // --- DEBUG İÇİN LOG ---
-                console.log("Gelen Best Sellers:", bestRes.data);
-                console.log("Gelen Top Rated:", ratedRes.data);
+        setBestSellers(Array.isArray(bestRes.data) ? bestRes.data : []);
+        setTopRated(Array.isArray(ratedRes.data) ? ratedRes.data : []);
+      } catch (error) {
+        console.error("Raporlar çekilemedi:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchData();
+  }, []);
 
-                // --- GÜVENLİK KONTROLÜ ---
-                // Gelen veri bir Dizi (Array) ise state'e at, değilse boş dizi at.
-                setBestSellers(Array.isArray(bestRes.data) ? bestRes.data : []);
-                setTopRated(Array.isArray(ratedRes.data) ? ratedRes.data : []);
+  if (loading) return (
+      <div className="d-flex justify-content-center my-5">
+          <div className="spinner-border text-primary" role="status">
+              <span className="visually-hidden">Yükleniyor...</span>
+          </div>
+      </div>
+  );
 
-            } catch (error) {
-                console.error("Raporlar çekilemedi:", error);
-                setBestSellers([]); // Hata durumunda boşalt
-                setTopRated([]);
-            } finally {
-                setLoading(false);
-            }
-        };
+  // Eğer iki liste de boşsa bileşeni gizle
+  if (bestSellers.length === 0 && topRated.length === 0) return null;
 
-        fetchData();
-    }, []);
+  const activeList = activeTab === "satis" ? bestSellers : topRated;
 
-    if (loading) return <div className="text-center py-4">Yükleniyor...</div>;
+  return (
+    <div className="container py-5">
+      <div className="text-center mb-5">
+        <h3 className="fw-bold mb-4">Öne Çıkanlar</h3>
+        
+        {/* Tab Butonları */}
+        <div className="d-inline-flex bg-light rounded-pill p-1 shadow-sm border">
+          <button 
+            className={`btn px-4 rounded-pill fw-bold transition ${activeTab === 'satis' ? 'btn-dark' : 'btn-light text-muted'}`}
+            onClick={() => setActiveTab("satis")}
+          >
+             <i className="bi bi-graph-up-arrow me-2"></i>Çok Satanlar
+          </button>
+          <button 
+            className={`btn px-4 rounded-pill fw-bold transition ${activeTab === 'puan' ? 'btn-warning text-dark' : 'btn-light text-muted'}`}
+            onClick={() => setActiveTab("puan")}
+          >
+             <i className="bi bi-star-fill me-2"></i>En Beğenilenler
+          </button>
+        </div>
+      </div>
+
+      {/* YENİ HALİ (Soldan Sağa Dizilir) */}
+<div className="row g-4">
+        {activeList.map((item, index) => {
+    
+    // --- GÜVENLİK GÜNCELLEMESİ ---
+    // Backend'den string gelmesi lazım ama nesne gelirse de yakalayalım.
+    let rawId = item.id || item._id || item.urunId;
+    
+    // Eğer rawId bir obje ise (örneğin MongoDB ObjectId nesnesi), 
+    // bunu string'e çevirmeyi dene veya varsa $oid özelliğini al.
+    // Ancak backend düzeltmesiyle buna gerek kalmayacak, yine de güvenliktir.
+    const productId = (typeof rawId === 'object' && rawId !== null) 
+                      ? rawId.toString() // Nesne ise stringe çevir (bazen [object Object] döner, backend düzeltmesi şart)
+                      : rawId;
+
+    if (!productId || productId === "[object Object]") return null; // Hatalı ID varsa basma
+
+    const formattedProduct = {
+      id: productId,
+      // ... diğer alanlar aynı ...
+      isim: item.urunAdi || item.isim,
+      resimUrl: item.resimUrl,
+      fiyat: item.fiyat || 0,
+      yorumlar: item.ortalamaPuan ? [{ puan: item.ortalamaPuan }] : [],
+      stok: item.stok !== undefined ? item.stok : 100,
+      marka: activeTab === 'satis' ? `${item.toplamSatisAdedi || 0} Adet Satıldı` : "Yüksek Puan",
+      kategori: activeTab === 'satis' ? "Popüler" : "Beğenilen"
+    };
 
     return (
-        <div className="container py-5">
-            <div className="row g-5">
-                {/* SOL TARAFA: ÇOK SATANLAR */}
-                <div className="col-md-6">
-                    <h3 className="fw-bold mb-3 text-primary">
-                        <i className="bi bi-graph-up-arrow me-2"></i>Çok Satanlar
-                    </h3>
-                    <div className="list-group shadow-sm">
-                        
-                        {/* Map hatası almamak için ekstra güvenlik */}
-                        {bestSellers.length > 0 ? (
-                            bestSellers.map((item, index) => (
-                                <div key={index} className="list-group-item d-flex justify-content-between align-items-center">
-                                    <div className="d-flex align-items-center">
-                                        <span className="badge bg-primary rounded-pill me-3">{index + 1}</span>
-                                        <span className="fw-bold">{item.urunAdi || item.urunIsmi}</span>
-                                    </div>
-                                    <span className="badge bg-light text-dark border">
-                                        {item.toplamSatisAdedi} Adet Satıldı
-                                    </span>
-                                </div>
-                            ))
-                        ) : (
-                            <div className="p-3 text-muted">Henüz satış verisi yok.</div>
-                        )}
-                    </div>
-                </div>
-
-                {/* SAĞ TARAFA: YÜKSEK PUANLILAR */}
-                <div className="col-md-6">
-                    <h3 className="fw-bold mb-3 text-warning">
-                        <i className="bi bi-star-fill me-2"></i>En Beğenilenler
-                    </h3>
-                    <div className="list-group shadow-sm">
-                        
-                        {topRated.length > 0 ? (
-                            topRated.map((item, index) => (
-                                <div key={index} className="list-group-item d-flex justify-content-between align-items-center">
-                                    <div className="d-flex align-items-center">
-                                        {item.resimUrl ? (
-                                            <img src={item.resimUrl} alt="urun" className="rounded-circle me-3" style={{width: "40px", height: "40px", objectFit: "cover"}} />
-                                        ) : (
-                                            <span className="badge bg-warning text-dark rounded-pill me-3">{index + 1}</span>
-                                        )}
-                                        <span className="fw-bold">{item.urunAdi || item.urunIsmi}</span>
-                                    </div>
-                                    <div className="d-flex align-items-center">
-                                        <i className="bi bi-star-fill text-warning me-1"></i>
-                                        <strong>{item.ortalamaPuan ? Number(item.ortalamaPuan).toFixed(1) : "0.0"}</strong>
-                                    </div>
-                                </div>
-                            ))
-                        ) : (
-                            <div className="p-3 text-muted">Henüz puan verisi yok.</div>
-                        )}
-                    </div>
-                </div>
-            </div>
-        </div>
+       // ... return kısmı aynı ...
+       <div key={productId} className="col-6 col-md-4 col-lg-3">
+          {/* ... */}
+          <ProductCard product={formattedProduct} />
+       </div>
     );
+})}
+      </div>
+    </div>
+  );
 }
 
 export default BestSellers;

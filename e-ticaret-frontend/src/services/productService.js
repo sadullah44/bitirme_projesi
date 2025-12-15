@@ -76,3 +76,7 @@ export const getSuggestedProducts = (productId) => {
 export const getCategoryTree = () => {
     return api.get("/kategori/agac");
 };
+export const getRecommendedProducts = (productId) => {
+    // DOĞRU: api nesnesini kullanıyoruz
+    return api.get(`/urunler/${productId}/onerilenler`);
+};
