@@ -1,13 +1,16 @@
 import { useEffect, useState, useContext } from "react";
 import { getProfile, addAddress, deleteAddress, setDefaultAddress } from "../services/userService";
-import { getMyOrders } from "../services/siparisService"; // <-- 1. YENİ IMPORT
+import { getMyOrders } from "../services/siparisService";
 import { AuthContext } from "../context/AuthContext";
 import { useNavigate } from "react-router-dom";
 
 function Profile() {
   const [user, setUser] = useState(null);
-  const [orders, setOrders] = useState([]); // <-- 2. SİPARİŞ STATE'İ
+  const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [activeTab, setActiveTab] = useState("adresler"); 
+  const [selectedOrder, setSelectedOrder] = useState(null); // Detay modalı için
+
   const { logout } = useContext(AuthContext);
   const navigate = useNavigate();
 
@@ -17,9 +20,7 @@ function Profile() {
     baslik: "", adresSatiri: "", sehir: "", ilce: "", postaKodu: ""
   });
 
-  // Verileri Çekme Fonksiyonu
   useEffect(() => {
-    // 1. Profili Çek
     getProfile()
       .then((res) => setUser(res.data))
       .catch((err) => {
@@ -30,30 +31,33 @@ function Profile() {
       })
       .finally(() => setLoading(false));
 
-    // 2. Siparişleri Çek (YENİ)
     getMyOrders()
         .then((res) => setOrders(res.data))
         .catch((err) => console.error("Siparişler çekilemedi:", err));
-
   }, []);
 
-  // --- ADRES İŞLEMLERİ (MEVCUT KODLARIN) ---
+  // Durum Badge Yardımcı Fonksiyonu
+  const getStatusBadge = (status) => {
+    if (!status) return "bg-secondary";
+    const s = status.toUpperCase();
+    if (s.includes("TESLİM")) return "bg-success";
+    if (s.includes("KARGO")) return "bg-warning text-dark";
+    if (s.includes("İPTAL")) return "bg-danger";
+    return "bg-primary";
+  };
+
+  // --- ADRES İŞLEMLERİ ---
   const handleDelete = (baslik) => {
     if(window.confirm(`${baslik} başlıklı adresi silmek istediğinize emin misiniz?`)) {
         deleteAddress(baslik)
-            .then(() => {
-                // Profili güncelle (listeyi yenilemek için)
-                getProfile().then(res => setUser(res.data));
-            })
+            .then(() => { getProfile().then(res => setUser(res.data)); })
             .catch(err => alert("Silme işlemi başarısız."));
     }
   };
 
   const handleSetDefault = (baslik) => {
     setDefaultAddress(baslik)
-        .then(() => {
-            getProfile().then(res => setUser(res.data));
-        })
+        .then(() => { getProfile().then(res => setUser(res.data)); })
         .catch(err => alert("Varsayılan ayarlanamadı."));
   };
 
@@ -69,203 +73,198 @@ function Profile() {
         .catch(err => alert("Adres eklenirken hata oluştu."));
   };
 
-  const handleInputChange = (e) => {
-    setNewAddress({...newAddress, [e.target.name]: e.target.value});
-  };
-
-  if (loading) return <div className="container mt-5 text-center">Yükleniyor...</div>;
+  if (loading) return <div className="container mt-5 text-center"><h5>Yükleniyor...</h5></div>;
   if (!user) return <div className="container mt-5 text-center">Kullanıcı bilgisi bulunamadı.</div>;
 
   return (
     <div className="container py-5">
       <div className="row g-4">
         
-        {/* SOL: Profil Kartı */}
+        {/* --- SOL MENÜ --- */}
         <div className="col-lg-4">
-          <div className="card border-0 shadow-sm rounded-4 text-center p-4 sticky-top" style={{top: "90px"}}>
-            <div className="position-relative mx-auto mb-3" style={{ width: "100px", height: "100px" }}>
-                <div className="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center fs-1 fw-bold w-100 h-100">
-                    {user.ad?.charAt(0).toUpperCase()}{user.soyad?.charAt(0).toUpperCase()}
+          <div className="card border-0 shadow-sm rounded-4 p-4 sticky-top" style={{top: "90px"}}>
+            <div className="text-center mb-4">
+                <div className="position-relative mx-auto mb-3" style={{ width: "80px", height: "80px" }}>
+                    <div className="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center fs-2 fw-bold w-100 h-100">
+                        {user.ad?.charAt(0).toUpperCase()}{user.soyad?.charAt(0).toUpperCase()}
+                    </div>
                 </div>
+                <h5 className="fw-bold mb-0">{user.ad} {user.soyad}</h5>
+                <p className="text-muted small">{user.eposta}</p>
             </div>
-            <h4 className="fw-bold mb-0">{user.ad} {user.soyad}</h4>
-            <p className="text-muted small">{user.eposta}</p>
-            <hr />
-            <div className="text-start px-3">
-                <p className="mb-2"><i className="bi bi-telephone me-2 text-primary"></i> {user.telefon || "Telefon Yok"}</p>
-                <p className="mb-2"><i className="bi bi-calendar3 me-2 text-primary"></i> Üye No: #{user.kullaniciNo}</p>
-            </div>
-            <div className="mt-3">
-                <button onClick={logout} className="btn btn-outline-danger w-100 rounded-pill">
-                    <i className="bi bi-box-arrow-right me-2"></i>Çıkış Yap
+
+            <div className="list-group list-group-flush mb-4">
+                <button className={`list-group-item list-group-item-action border-0 rounded-3 mb-2 px-3 py-2 d-flex align-items-center ${activeTab === 'adresler' ? 'bg-primary text-white' : 'text-dark'}`} onClick={() => setActiveTab('adresler')}>
+                    <i className="bi bi-geo-alt me-3 fs-5"></i> Adres Bilgilerim
+                </button>
+                <button className={`list-group-item list-group-item-action border-0 rounded-3 mb-2 px-3 py-2 d-flex align-items-center ${activeTab === 'siparisler' ? 'bg-primary text-white' : 'text-dark'}`} onClick={() => setActiveTab('siparisler')}>
+                    <i className="bi bi-box-seam me-3 fs-5"></i> Sipariş Geçmişim
                 </button>
             </div>
+            <hr />
+            <button onClick={logout} className="btn btn-outline-danger w-100 rounded-pill mt-2">Çıkış Yap</button>
           </div>
         </div>
 
-        {/* SAĞ SÜTUN */}
+        {/* --- SAĞ İÇERİK --- */}
         <div className="col-lg-8">
           
-          {/* 1. BÖLÜM: ADRES LİSTESİ (MEVCUT) */}
-          <div className="card border-0 shadow-sm rounded-4 p-4 mb-4">
-            <div className="d-flex justify-content-between align-items-center mb-4">
-                <h4 className="fw-bold mb-0">📍 Kayıtlı Adreslerim</h4>
-                <button 
-                    className="btn btn-primary btn-sm rounded-pill px-3"
-                    onClick={() => setShowModal(true)}
-                >
-                    <i className="bi bi-plus-lg me-1"></i> Yeni Adres Ekle
-                </button>
-            </div>
-
-            {user.adresler && user.adresler.length > 0 ? (
+          {/* ADRES SEKEMESİ */}
+          {activeTab === 'adresler' && (
+             <div className="card border-0 shadow-sm rounded-4 p-4">
+                <div className="d-flex justify-content-between align-items-center mb-4 border-bottom pb-3">
+                    <h4 className="fw-bold mb-0">📍 Kayıtlı Adreslerim</h4>
+                    <button className="btn btn-primary btn-sm rounded-pill px-3" onClick={() => setShowModal(true)}>+ Yeni Adres</button>
+                </div>
+                {/* Adres listesi kodunla aynı... */}
                 <div className="row g-3">
-                    {user.adresler.map((adres, index) => (
+                    {user.adresler?.map((adres, index) => (
                         <div key={index} className="col-md-6">
-                            <div className={`card h-100 border-0 rounded-3 p-3 position-relative ${adres.varsayilanMi ? 'bg-white shadow-sm border border-success' : 'bg-light'}`}>
-                                
-                                {adres.varsayilanMi ? (
-                                    <span className="position-absolute top-0 end-0 badge bg-success m-2">
-                                        <i className="bi bi-check-circle me-1"></i>Varsayılan
-                                    </span>
-                                ) : null}
-
-                                <h6 className="fw-bold text-dark mb-1 mt-2">
-                                    <i className="bi bi-house-door me-2"></i>{adres.baslik}
-                                </h6>
-                                <p className="text-muted small mb-2 text-truncate">
-                                    {adres.adresSatiri}
-                                </p>
-                                <p className="mb-0 small fw-bold text-secondary">
-                                    {adres.ilce} / {adres.sehir}
-                                </p>
-                                
-                                <div className="mt-3 d-flex gap-2">
-                                    <button 
-                                        className="btn btn-outline-danger btn-sm py-0 px-2" 
-                                        style={{fontSize: "12px"}}
-                                        onClick={() => handleDelete(adres.baslik)}
-                                    >
-                                        Sil
-                                    </button>
-
-                                    {!adres.varsayilanMi && (
-                                        <button 
-                                            className="btn btn-outline-secondary btn-sm py-0 px-2" 
-                                            style={{fontSize: "12px"}}
-                                            onClick={() => handleSetDefault(adres.baslik)}
-                                        >
-                                            Varsayılan Yap
-                                        </button>
-                                    )}
+                            <div className={`card h-100 border-0 rounded-3 p-3 position-relative ${adres.varsayilanMi ? 'shadow-sm border border-success' : 'bg-light'}`}>
+                                <h6 className="fw-bold mt-2">{adres.baslik}</h6>
+                                <p className="small text-muted">{adres.adresSatiri}</p>
+                                <div className="mt-auto d-flex gap-2">
+                                    <button className="btn btn-sm btn-link text-danger p-0" onClick={() => handleDelete(adres.baslik)}>Sil</button>
+                                    {!adres.varsayilanMi && <button className="btn btn-sm btn-link text-secondary p-0" onClick={() => handleSetDefault(adres.baslik)}>Varsayılan Yap</button>}
                                 </div>
                             </div>
                         </div>
                     ))}
                 </div>
-            ) : (
-                <div className="alert alert-warning text-center">Henüz kayıtlı adresiniz yok.</div>
-            )}
-          </div>
+             </div>
+          )}
 
-          {/* 2. BÖLÜM: SİPARİŞ GEÇMİŞİ (YENİ EKLENEN KISIM) */}
-          <div className="card border-0 shadow-sm rounded-4 p-4">
-             <h4 className="fw-bold mb-4">📦 Sipariş Geçmişim</h4>
-             
-             {orders.length === 0 ? (
-                 <div className="alert alert-info text-center">Henüz bir siparişiniz bulunmuyor.</div>
-             ) : (
-                 <div className="d-flex flex-column gap-3">
-                     {orders.map((order) => (
-                         <div key={order.id} className="card border rounded-3 overflow-hidden">
-                             {/* Sipariş Başlığı */}
-                             <div className="card-header bg-light d-flex justify-content-between align-items-center">
-                                 <div>
-                                     <span className="fw-bold me-2">Sipariş #{order.siparisNo}</span>
-                                     <small className="text-muted">
-                                         {new Date(order.siparisTarihi).toLocaleDateString("tr-TR")}
+          {/* SİPARİŞ GEÇMİŞİ SEKEMESİ (YENİLENEN KISIM) */}
+          {activeTab === 'siparisler' && (
+             <div className="card border-0 shadow-sm rounded-4 p-4">
+                 <h4 className="fw-bold mb-4 border-bottom pb-3">📦 Sipariş Geçmişim</h4>
+                 
+                 {orders.length === 0 ? (
+                     <div className="alert alert-info text-center">Henüz bir siparişiniz bulunmuyor.</div>
+                 ) : (
+                     <div className="d-flex flex-column gap-4">
+                         {orders.map((order) => (
+                             <div key={order.id || order.siparisNo} className="card border-0 shadow-sm rounded-3 overflow-hidden border">
+                                 {/* Trendyol Style Header */}
+                                 <div className="card-header bg-white py-3 border-bottom">
+                                     <div className="row align-items-center">
+                                         <div className="col-md-3 col-6 mb-2 mb-md-0">
+                                             <span className="text-muted small d-block">Sipariş No</span>
+                                             <strong className="text-dark">#{order.siparisNo}</strong>
+                                         </div>
+                                         <div className="col-md-3 col-6 mb-2 mb-md-0">
+                                             <span className="text-muted small d-block">Tarih</span>
+                                             <strong className="text-dark">{new Date(order.siparisTarihi).toLocaleDateString("tr-TR")}</strong>
+                                         </div>
+                                         <div className="col-md-3 col-6">
+                                             <span className="text-muted small d-block">Toplam</span>
+                                             <strong className="text-primary">{order.toplamTutar?.toLocaleString()} ₺</strong>
+                                         </div>
+                                         <div className="col-md-3 col-6 text-md-end">
+                                             <button 
+                                                className="btn btn-outline-primary btn-sm rounded-pill fw-bold"
+                                                onClick={() => setSelectedOrder(order)}
+                                             >
+                                                 Sipariş Detayı
+                                             </button>
+                                         </div>
+                                     </div>
+                                 </div>
+                                 <div className="card-body bg-light-subtle py-2 px-3">
+                                     <span className={`badge ${getStatusBadge(order.genelDurum || order.durum)} px-3 py-2 rounded-pill`}>
+                                         {order.genelDurum || order.durum || "HAZIRLANIYOR"}
+                                     </span>
+                                     <small className="ms-2 text-muted">
+                                         {order.urunler?.length} Ürün içeren paket
                                      </small>
                                  </div>
-                                 <span className="badge bg-success">{order.durum}</span>
                              </div>
-
-                             {/* Sipariş İçeriği */}
-                             <div className="card-body">
-                                 {order.urunler.map((item, idx) => (
-                                     <div key={idx} className="d-flex justify-content-between align-items-center mb-2 border-bottom pb-2 last-no-border">
-                                         <div className="d-flex align-items-center">
-                                             <div className="bg-light rounded p-2 me-3 text-center" style={{width: "40px", height: "40px"}}>
-                                                 <i className="bi bi-box-seam text-secondary"></i>
-                                             </div>
-                                             <div>
-                                                 <h6 className="mb-0 small fw-bold">{item.urunAdi}</h6>
-                                                 <small className="text-muted">{item.miktar} Adet x {item.fiyat} ₺</small>
-                                             </div>
-                                         </div>
-                                         <span className="fw-bold small">{item.miktar * item.fiyat} ₺</span>
-                                     </div>
-                                 ))}
-                             </div>
-
-                             {/* Sipariş Özeti */}
-                             <div className="card-footer bg-white text-end border-top-0">
-                                 <small className="text-muted me-2">Toplam Tutar:</small>
-                                 <span className="fw-bold fs-5 text-primary">{order.toplamTutar} ₺</span>
-                             </div>
-                         </div>
-                     ))}
-                 </div>
-             )}
-          </div>
-
+                         ))}
+                     </div>
+                 )}
+             </div>
+          )}
         </div>
       </div>
 
-      {/* MODAL (AYNI KALDI) */}
-      {showModal && (
+      {/* --- SİPARİŞ DETAY MODALI (DETAYLI GÖRÜNÜM) --- */}
+      {selectedOrder && (
         <>
-            <div className="modal fade show d-block" style={{ backgroundColor: "rgba(0,0,0,0.5)" }}>
-                <div className="modal-dialog modal-dialog-centered">
-                    <div className="modal-content rounded-4 border-0 shadow-lg">
-                        <div className="modal-header">
-                            <h5 className="modal-title fw-bold">Yeni Adres Ekle</h5>
-                            <button type="button" className="btn-close" onClick={() => setShowModal(false)}></button>
-                        </div>
-                        <div className="modal-body">
-                            <form onSubmit={handleAddSubmit}>
-                                <div className="mb-3">
-                                    <label className="form-label small text-muted fw-bold">Adres Başlığı (Örn: İş)</label>
-                                    <input className="form-control" name="baslik" value={newAddress.baslik} onChange={handleInputChange} required />
-                                </div>
-                                <div className="row g-2 mb-3">
-                                    <div className="col-6">
-                                        <label className="form-label small text-muted fw-bold">Şehir</label>
-                                        <input className="form-control" name="sehir" value={newAddress.sehir} onChange={handleInputChange} required />
-                                    </div>
-                                    <div className="col-6">
-                                        <label className="form-label small text-muted fw-bold">İlçe</label>
-                                        <input className="form-control" name="ilce" value={newAddress.ilce} onChange={handleInputChange} required />
-                                    </div>
-                                </div>
-                                <div className="mb-3">
-                                    <label className="form-label small text-muted fw-bold">Açık Adres</label>
-                                    <textarea className="form-control" name="adresSatiri" rows="2" value={newAddress.adresSatiri} onChange={handleInputChange} required></textarea>
-                                </div>
-                                <div className="mb-3">
-                                    <label className="form-label small text-muted fw-bold">Posta Kodu</label>
-                                    <input className="form-control" name="postaKodu" value={newAddress.postaKodu} onChange={handleInputChange} required />
-                                </div>
-                                <div className="d-grid">
-                                    <button type="submit" className="btn btn-primary rounded-pill">Kaydet</button>
-                                </div>
-                            </form>
-                        </div>
-                    </div>
+          <div className="modal-backdrop fade show"></div>
+          <div className="modal fade show d-block" tabIndex="-1">
+            <div className="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+              <div className="modal-content border-0 shadow-lg rounded-4">
+                <div className="modal-header border-bottom py-3">
+                  <h5 className="modal-title fw-bold">Sipariş Detayı (#{selectedOrder.siparisNo})</h5>
+                  <button type="button" className="btn-close" onClick={() => setSelectedOrder(null)}></button>
                 </div>
+                <div className="modal-body p-4">
+                  <div className="row mb-4 bg-light p-3 rounded-3 g-3">
+                    <div className="col-md-6">
+                      <p className="text-muted small mb-1 fw-bold">Teslimat Adresi</p>
+                      <p className="mb-0 small">{selectedOrder.teslimatAdresi?.baslik} - {selectedOrder.teslimatAdresi?.adresSatiri}</p>
+                    </div>
+                    <div className="col-md-6 text-md-end border-md-start">
+                      <p className="text-muted small mb-1 fw-bold">Sipariş Özeti</p>
+                      <h5 className="text-primary fw-bold mb-0">{selectedOrder.toplamTutar?.toLocaleString()} ₺</h5>
+                    </div>
+                  </div>
+
+                  <h6 className="fw-bold mb-3">Ürünler</h6>
+                  <div className="list-group list-group-flush border rounded-3 overflow-hidden">
+                    {selectedOrder.urunler?.map((item, idx) => (
+                      <div key={idx} className="list-group-item p-3">
+                        <div className="d-flex justify-content-between align-items-center">
+                          <div className="d-flex align-items-center gap-3">
+                            <div className="bg-light rounded p-2 text-center" style={{width: "50px"}}>📦</div>
+                            <div>
+                                <h6 className="mb-0 fw-bold">{item.urunAdi || item.isim}</h6>
+                                <small className="text-muted">Adet: {item.miktar || item.adet} x {item.fiyat} ₺</small>
+                            </div>
+                          </div>
+                          <div className="text-end">
+                             <span className={`badge ${getStatusBadge(item.durum)} mb-1 d-block`}>{item.durum || "Hazırlanıyor"}</span>
+                             <span className="fw-bold text-dark">{(item.fiyat || 0) * (item.miktar || item.adet || 0)} ₺</span>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+                <div className="modal-footer bg-light">
+                  <button className="btn btn-secondary px-4 rounded-pill" onClick={() => setSelectedOrder(null)}>Kapat</button>
+                </div>
+              </div>
             </div>
+          </div>
         </>
       )}
 
+      {/* ADRES EKLEME MODALI (KODUNLA AYNI) */}
+      {showModal && (
+        <div className="modal fade show d-block" style={{ backgroundColor: "rgba(0,0,0,0.5)" }}>
+            <div className="modal-dialog modal-dialog-centered">
+                <div className="modal-content rounded-4 border-0">
+                    <div className="modal-header">
+                        <h5 className="modal-title fw-bold">Yeni Adres Ekle</h5>
+                        <button type="button" className="btn-close" onClick={() => setShowModal(false)}></button>
+                    </div>
+                    <div className="modal-body">
+                        <form onSubmit={handleAddSubmit}>
+                            <input className="form-control mb-3" name="baslik" placeholder="Adres Başlığı" onChange={(e) => setNewAddress({...newAddress, baslik: e.target.value})} required />
+                            <div className="row g-2 mb-3">
+                                <div className="col-6"><input className="form-control" name="sehir" placeholder="Şehir" onChange={(e) => setNewAddress({...newAddress, sehir: e.target.value})} required /></div>
+                                <div className="col-6"><input className="form-control" name="ilce" placeholder="İlçe" onChange={(e) => setNewAddress({...newAddress, ilce: e.target.value})} required /></div>
+                            </div>
+                            <textarea className="form-control mb-3" name="adresSatiri" placeholder="Açık Adres" onChange={(e) => setNewAddress({...newAddress, adresSatiri: e.target.value})} required></textarea>
+                            <input className="form-control mb-3" name="postaKodu" placeholder="Posta Kodu" onChange={(e) => setNewAddress({...newAddress, postaKodu: e.target.value})} required />
+                            <button type="submit" className="btn btn-primary w-100 rounded-pill">Kaydet</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+      )}
     </div>
   );
 }
