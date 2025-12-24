@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Link } from "react-router-dom";
 
 function ProductCard({ product }) {
+  //console.log("Karttaki Ürün Verisi:", product);
   // Eğer veritabanında resimUrl yoksa veya kırık ise bunu göster
   const fallbackImage = "https://placehold.co/500x500?text=Resim+Yok";
   const [imgSrc, setImgSrc] = useState(product.resimUrl || fallbackImage);
@@ -85,7 +86,7 @@ function ProductCard({ product }) {
               </span>
            </div>
 
-           <Link to={`/urun/${product.id}`} className="btn-circle shadow-sm text-decoration-none">
+           <Link to={`/urun/${product.id|| product._id}`} className="btn-circle shadow-sm text-decoration-none">
              <i className="bi bi-arrow-right fs-5"></i>
            </Link>
         </div>

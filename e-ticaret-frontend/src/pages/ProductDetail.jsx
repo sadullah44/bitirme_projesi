@@ -8,6 +8,7 @@ import { sepetEkle } from "../services/sepetService";
 // 👇 HER İKİ BİLEŞENİ DE IMPORT EDİYORUZ
 import ProductRecommendations from "../components/ProductRecommendations"; // Eski (Benzer Ürünler)
 import RecommendedProducts from "../components/RecommendedProducts";     // Yeni (İlginizi Çekebilir)
+import FrequentlyBoughtTogether from "../components/FrequentlyBoughtTogether"; // 🔥 YENİ
 
 function ProductDetail() {
   const { id } = useParams();
@@ -106,8 +107,10 @@ function ProductDetail() {
             </div>
         </div>
       </div>
-
-      {/* 2. KISIM: BENZER ÜRÜNLER (Eski Bileşen - Kategori Bazlı) */}
+      {/* 🔥🔥 2. KISIM (YENİ): BİRLİKTE ÇOK ALINANLAR 🔥🔥 */}
+      {/* Bunu ana ürünün hemen altına koyuyoruz ki kullanıcı sepete eklemeye meyilliyken görsün */}
+      <FrequentlyBoughtTogether currentProductId={id} />
+      {/* 3. KISIM: BENZER ÜRÜNLER (Eski Bileşen - Kategori Bazlı) */}
       <div className="mb-4">
         <h4 className="fw-bold mb-3">Benzer Ürünler</h4>
         {/* Eski bileşeni burada tuttuk */}
@@ -116,7 +119,7 @@ function ProductDetail() {
 
       <hr className="my-5 text-muted" />
 
-      {/* 3. KISIM: İLGİNİZİ ÇEKEBİLİR (Yeni Bileşen - Akıllı Öneri) */}
+      {/* 4. KISIM: İLGİNİZİ ÇEKEBİLİR (Yeni Bileşen - Akıllı Öneri) */}
       {/* Yeni bileşeni buraya ekledik */}
       <RecommendedProducts currentProductId={id} />
       

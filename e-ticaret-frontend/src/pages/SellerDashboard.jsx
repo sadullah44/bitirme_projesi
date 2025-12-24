@@ -25,7 +25,7 @@ function SellerDashboard() {
         { anaKategori: "Giyim", genderRequired: true, altKategoriler: ["Tişört", "Pantolon", "Mont","Kazak","Triko"] },
         { anaKategori: "Ayakkabı", genderRequired: true, altKategoriler: ["Spor Ayakkabı", "Bot","Klasik Ayakkabı"] },
         { anaKategori: "Aksesuar", genderRequired: true, altKategoriler: ["Kolye", "Bileklik","Kol Saati"] },
-        { anaKategori: "Elektronik", genderRequired: false, altKategoriler: ["Telefon", "Bilgisayar", "Tablet","Kulak İçi Kulaklık","Kulak Üstü Kulaklık","Hoparlör"] }
+        { anaKategori: "Elektronik", genderRequired: false, altKategoriler: ["Telefon", "Bilgisayar", "Tablet","Kulak İçi Kulaklık","Kulak Üstü Kulaklık","Hoparlör","Telefon Aksesuarları"] }
     ];
 
     const [mainCategory, setMainCategory] = useState("");
@@ -101,9 +101,15 @@ function SellerDashboard() {
                 ...product,
                 resimUrl: finalImageUrl,
                 anaKategori: mainCategory,
-                kategori: subCategory, // Backend'de alt kategori 'kategori' alanına eşleşiyor olabilir
+                kategori: subCategory,
                 cinsiyet: gender
             };
+
+            // 🔥🔥 DÜZELTME BURADA 🔥🔥
+            // Eğer yeni ekleme yapıyorsak (Düzenleme değilse), ID alanını paketten siliyoruz.
+            if (!isEditing) {
+                delete productData.id; 
+            }
 
             if (isEditing) {
                 await updateProduct(product.id, productData);
@@ -112,14 +118,15 @@ function SellerDashboard() {
                 await addProduct(productData);
                 alert("Ürün eklendi!");
             }
+            
             resetForm();
             setActiveTab("my-products");
             fetchMyProducts();
         } catch (error) {
+            console.error(error); // Hatayı konsola yazdıralım ki görelim
             alert("İşlem başarısız.");
         }
     };
-
     const handleEditClick = (item) => {
         setProduct(item);
         setMainCategory(item.anaKategori || "");

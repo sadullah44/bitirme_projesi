@@ -329,7 +329,7 @@ function Home() {
                 ) : (
                   <div className="row g-4">
                     {products.map((p) => (
-                      <div className="col-6 col-md-4 col-lg-3" key={p.id}>
+                      <div className="col-6 col-md-4 col-lg-3" key={p.id || p._id || Math.random()}>
                         <ProductCard product={p} />
                       </div>
                     ))}

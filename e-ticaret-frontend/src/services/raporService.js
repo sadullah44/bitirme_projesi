@@ -13,3 +13,7 @@ export const getBestSellers = () => {
 export const getTopRated = () => {
     return api.get("/raporlar/yuksek-puanlilar");
 };
+// Birlikte Alınanlar (Cross-Sell)
+export const getFrequentlyBoughtTogether = (urunId) => {
+    return api.get(`/raporlar/birlikte-alinanlar/${urunId}`);
+};
